@@ -14,8 +14,15 @@ describe("Finding results in cassandra", function(){
 
 	describe('Successful scenario.', function(){
 
-			it("Should create DB and put in fields", function(done){    
+			it("Should create DB", function(done){    
 			    	lib.createDBStructure('test_config', function(res){
+				    	assert.equal('[createDBStructure function] done', res); 
+				    	done();
+				    	})	
+		    });
+
+		    it("Should put fields in DB", function(done){    
+			    	lib.putFromConfigInDB('test_config', function(res){
 				    	assert.equal('[createDBStructure function] done', res); 
 				    	done();
 				    	})	
@@ -129,18 +136,33 @@ describe("Finding results in cassandra", function(){
 			    	})
 			});
 
-			it("Should throw exception if SELECT on not created table.", function(done){
+			it("Should throw exception if INSERT in not created table.", function(done){
 
-			    	lib.getElement('delta', '2016-02-22-10', '2016-02-22-11', '-2', 'test_asda', function(res){
+			    	lib.insertDataInTable('test_asda', {id: 'delta', date: '2016-02-22-10', number:1}, function(res){
 						if (res.status != 400){
 							assert.fail("Should return error.");
 						} else {
-							assert.equal(res.msg, "[getElement function] SELECT error");						
+							assert.equal(res.msg, '[insertDataInTable function] INSERT error');						
 						} 
 
 						done()
 			    	})
 			});
+
+			it("Should throw exception if SELECT on not created table.", function(done){
+
+			    	lib.selectFromDB('test_asda', 'str', '2003-05-03-02', '2003-05-03-10', function(res){
+
+						if (res.status != 400){
+							assert.fail("Should return error.");
+						} else {
+							assert.equal(res.msg, "[selectFromDB function] SELECT error");						
+						} 
+
+						done()
+			    	})
+			});
+
 		});
 
 });
