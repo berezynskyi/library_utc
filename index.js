@@ -1,31 +1,39 @@
 
 var cassandra = require('cassandra-driver');
-var client = new cassandra.Client({ contactPoints: ['127.0.0.1'], keyspace: 'date'});
-var config = require('./config.js')
 
-function createDBStructure(callback){
-  client.execute('CREATE TABLE IF NOT EXISTS test_for_cass (id varchar, date varchar, number int, PRIMARY KEY (id,date));',
+var config = require('./config.js')
+var client = new cassandra.Client(config.database);
+
+function createDBStructure(nameOfTable, callback){
+  client.execute("CREATE TABLE IF NOT EXISTS "+nameOfTable+" (id varchar, date varchar, number int, PRIMARY KEY (id,date));",
     function(err,res){
-      if (err) {console.log(err); return;};
+      if (err) {
+          callback({status: 400, msg:'[createDBStructure function] CREATE DB error: '+err})
+          console.log(err)
+          return;
+        };
 
       for (var i = 0; i < config.array.length; i++) {
-        client.execute("INSERT INTO test_for_cass (id, date, number) VALUES ('"+config.array[i].id+"','"+config.array[i].date+"', "+config.array[i].number+");",
-          function(err,res){
-            if (err) {console.log(err); return;};
-          })
+           client.execute("INSERT INTO "+nameOfTable+" (id, date, number) VALUES ('"+config.array[i].id+"','"+config.array[i].date+"', "+config.array[i].number+");",
+              function(err,res){
+                if (err) {
+                  callback({status: 400, msg:'[createDBStructure function] INSERT error: '+err})
+                  console.log(err)
+                  return;
+                };
+              })
       };
-      callback('done')
+      callback('[createDBStructure function] done')
     })
-
 }
 
 function changeTime(reqTime, timezone, toUTC){
 
-	function changeStr(el){
-		return (el/10 >= 1) ? el : '0'+el;
-	}
+  function changeStr(el){
+    return (el/10 >= 1) ? el : '0'+el;
+  }
 
-	var UTCTimezone
+  var UTCTimezone
     var time = reqTime.split('-');
 
     (toUTC) ? UTCTimezone = parseInt(time[3])-parseInt(timezone) : UTCTimezone = parseInt(time[3])+parseInt(timezone)
@@ -37,23 +45,29 @@ function changeTime(reqTime, timezone, toUTC){
     return time;
 }
 
-function getElement(id, reqDateFrom, reqDateTo, timezone, callback){
+function getElement(id, reqDateFrom, reqDateTo, timezone, nameOfTable, callback){
 
-	if (!id || !reqDateFrom || !reqDateTo || !timezone) {callback('error')}
+  if (!id || !reqDateFrom || !reqDateTo || !timezone || !nameOfTable) {
+    callback({status: 400, msg:'[getElement function] not enough request params'})
+    return;
+  }
 
     //changing dateFrom according to timezone
-	var dateFrom = changeTime(reqDateFrom, timezone, true)
+    var dateFrom = changeTime(reqDateFrom, timezone, true)
 
     //changing dateTo according to timezone
     var dateTo = changeTime(reqDateTo, timezone, true)
 
-    client.execute("SELECT id, date, number FROM test_for_cass WHERE id ='"+id+"' AND date>='"+dateFrom+"' AND date<='"+dateTo+"';", 
+    client.execute("SELECT id, date, number FROM "+nameOfTable+" WHERE id ='"+id+"' AND date>='"+dateFrom+"' AND date<='"+dateTo+"';", 
         function(err, result) {
 
-          if (err) {callback('error')};
+          if (err) {
+            callback({status: 400, msg:'[getElement function] SELECT error'})
+            return;
+          };
           
           for (var i = 0, len = result.rows.length; i < len; i++) {
-          	result.rows[i].date = changeTime(result.rows[i].date, timezone, false)
+            result.rows[i].date = changeTime(result.rows[i].date, timezone, false)
           };
 
           callback(result.rows)
@@ -61,11 +75,11 @@ function getElement(id, reqDateFrom, reqDateTo, timezone, callback){
 }
 
 function sumData(res){
-	var sum = 0;
-	for (var i = 0; i < res.length; i++) {
-		sum += res[i].number
-	};
-	return sum;
+  var sum = 0;
+  for (var i = 0; i < res.length; i++) {
+    sum += res[i].number
+  };
+  return sum;
 }
 
 module.exports = {

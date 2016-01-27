@@ -15,8 +15,8 @@ describe("Finding results in cassandra", function(){
 	describe('Successful scenario.', function(){
 
 			it("Should create DB and put in fields", function(done){    
-			    	lib.createDBStructure(function(res){
-				    	assert.equal('done', res); 
+			    	lib.createDBStructure('test_config', function(res){
+				    	assert.equal('[createDBStructure function] done', res); 
 				    	done();
 				    	})	
 		    });
@@ -42,7 +42,7 @@ describe("Finding results in cassandra", function(){
 		    });
 
 		   	it("Should find results  with timezone 0", function(done){ 
-			    	lib.getElement('str', '2003-05-04-14', '2003-05-04-15', '0', function(res){
+			    	lib.getElement('str', '2003-05-04-14', '2003-05-04-15', '0', 'test_config', function(res){
 				    	assert.equal(res.length, 1); 
 				    	assert.deepEqual(res[0], config.day); 
 				    	done();
@@ -50,7 +50,7 @@ describe("Finding results in cassandra", function(){
 		    });
 
 		    it("Should find results with timezone + ", function(done){    
-			    	lib.getElement('str', '2003-05-04-14', '2003-05-04-16', '+3', function(res){
+			    	lib.getElement('str', '2003-05-04-14', '2003-05-04-16', '+3', 'test_config', function(res){
 				    	assert.equal(res.length, 1); 
 				    	assert.deepEqual(res[0], config.dayBefore); 
 				    	done();
@@ -58,7 +58,7 @@ describe("Finding results in cassandra", function(){
 		    });
 
 		    it("Should find results with timezone -", function(done){    
-			    	lib.getElement('str', '2003-05-04-14', '2003-05-04-20', '-1', function(res){
+			    	lib.getElement('str', '2003-05-04-14', '2003-05-04-20', '-1', 'test_config', function(res){
 				    	assert.equal(res.length, 2); 
 				    	assert.deepEqual(res[0], config.dayAfter); 
 				    	done();
@@ -66,7 +66,7 @@ describe("Finding results in cassandra", function(){
 		    });
 
 		    it("Should sum results with timezone 0", function(done){    
-			    	lib.getElement('str', '2003-05-04-14', '2003-05-04-20', '0', function(res){
+			    	lib.getElement('str', '2003-05-04-14', '2003-05-04-20', '0', 'test_config', function(res){
 			    		var sum = lib.sumData(res)
 
 						assert.equal(sum, 31)
@@ -75,7 +75,7 @@ describe("Finding results in cassandra", function(){
 		    });
 
 		    it("Should sum results with timezone +", function(done){    
-			    	lib.getElement('str', '2003-05-04-14', '2003-05-04-20', '+3', function(res){
+			    	lib.getElement('str', '2003-05-04-14', '2003-05-04-20', '+3', 'test_config', function(res){
 			    		var sum = lib.sumData(res)
 						assert.equal(sum, 13)
 						done();
@@ -83,7 +83,7 @@ describe("Finding results in cassandra", function(){
 		    });
 
 		    it("Should sum results with timezone -", function(done){    
-			    	lib.getElement('str', '2003-05-04-14', '2003-05-04-20', '-2', function(res){
+			    	lib.getElement('str', '2003-05-04-14', '2003-05-04-20', '-2', 'test_config', function(res){
 			    		var sum = lib.sumData(res)
 						assert.equal(sum, 25)
 						done();
@@ -91,7 +91,7 @@ describe("Finding results in cassandra", function(){
 		    });
 
 		    it("Should sum results per day with timezone 0", function(done){    
-			    	lib.getElement('str', '2003-05-04-00', '2003-05-04-23', '0', function(res){
+			    	lib.getElement('str', '2003-05-04-00', '2003-05-04-23', '0', 'test_config', function(res){
 			    		var sum = lib.sumData(res)
 						assert.equal(sum, 189)
 						done();
@@ -99,7 +99,7 @@ describe("Finding results in cassandra", function(){
 		    });
 
 		    it("Should sum results per day with timezone +", function(done){    
-			    	lib.getElement('str', '2003-05-04-00', '2003-05-04-23', '+2', function(res){
+			    	lib.getElement('str', '2003-05-04-00', '2003-05-04-23', '+2', 'test_config', function(res){
 			    		var sum = lib.sumData(res)
 						assert.equal(sum, 171)
 						done();
@@ -107,7 +107,7 @@ describe("Finding results in cassandra", function(){
 		    });
 
 		    it("Should sum results per day with timezone -", function(done){    
-			    	lib.getElement('str', '2003-05-04-00', '2003-05-04-23', '-2', function(res){
+			    	lib.getElement('str', '2003-05-04-00', '2003-05-04-23', '-2', 'test_config', function(res){
 			    		var sum = lib.sumData(res)
 						assert.equal(sum, 208)
 						done();
@@ -118,11 +118,24 @@ describe("Finding results in cassandra", function(){
 		describe('Error handling scenario.', function(){
 			it("Should throw exception if find without required parameters.", function(done){
 
-			    	lib.getElement('delta', '2016-02-22-10', '2016-02-22-11', null, function(res){
-						if (res != 'error'){
+			    	lib.getElement('delta', '2016-02-22-10', '2016-02-22-11', null, 'test_config', function(res){
+						if (res.status != 400){
 							assert.fail("Should return error.");
 						} else {
-							assert.equal(res, "error");						
+							assert.equal(res.msg, "[getElement function] not enough request params");						
+						} 
+
+						done()
+			    	})
+			});
+
+			it("Should throw exception if SELECT on not created table.", function(done){
+
+			    	lib.getElement('delta', '2016-02-22-10', '2016-02-22-11', '-2', 'test_asda', function(res){
+						if (res.status != 400){
+							assert.fail("Should return error.");
+						} else {
+							assert.equal(res.msg, "[getElement function] SELECT error");						
 						} 
 
 						done()

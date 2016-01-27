@@ -1,5 +1,9 @@
 var config = {}
 
+config.database = {
+	contactPoints: ['127.0.0.1'], 
+	keyspace: 'date'
+}
 
 config.array = [
 {id: 'str', date: '2003-05-03-02', number: 3},
