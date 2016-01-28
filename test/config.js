@@ -19,8 +19,8 @@ config.array = [
 {id: 'str', date: '2003-05-03-23', number: 0},
 
 {id: 'str', date: '2003-05-04-00', number: 3},
-{id: 'str', date: '2003-05-04-02', number: 2},
-{id: 'str', date: '2003-05-04-03', number: 12},
+{id: 'str', date: '2003-05-04-01', number: 2},
+{id: 'str', date: '2003-05-04-02', number: 12},
 {id: 'str', date: '2003-05-04-04', number: 32},
 {id: 'str', date: '2003-05-04-05', number: 45},
 {id: 'str', date: '2003-05-04-07', number: 4},
@@ -45,19 +45,19 @@ config.array = [
 
 config.day = {
 	id: 'str',
-	date: '2003-05-04-14',
+	date: '2003-05-04',
 	number: 6
 }
 
 config.dayBefore = {
 	id: 'str',
-	date: '2003-05-04-15',
+	date: '2003-05-04',
 	number: 7
 }
 
 config.dayAfter = {
 	id: 'str',
-	date: '2003-05-04-17',
+	date: '2003-05-04',
 	number: 10
 }
 

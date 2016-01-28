@@ -11,6 +11,12 @@ function createDBStructure(nameOfTable, callback){
           callback({status: 400, msg:'[createDBStructure function] CREATE DB error'})
           return;
         };
+        putFromConfigInDB(nameOfTable, function(res){
+          if (res.status) {
+              callback(err)
+              return;
+          }
+        })
       callback('[createDBStructure function] done')
     })
 }
@@ -88,17 +94,19 @@ function getElement(id, reqDateFrom, reqDateTo, timezone, nameOfTable, callback)
             };
        } 
 
-      callback(res)
+       sortPerDay(res, function(res){
+            callback(res)
+       })
     })
 }
 
-function sumData(res){
-    var sum = 0;
-    for (var i = 0; i < res.length; i++) {
-      sum += res[i].number
-    };
-    return sum;
-}
+// function sumData(res){
+//     var sum = 0;
+//     for (var i = 0; i < res.length; i++) {
+//       sum += res[i].number
+//     };
+//     return sum;
+// }
 
 function sortPerDay(res, callback){
 
@@ -151,7 +159,7 @@ function sumAndCut(sorted, res){
 
 module.exports = {
     getElement: getElement,
-    sumData: sumData,
+    // sumData: sumData,
     changeTime: changeTime,
     createDBStructure: createDBStructure,
     insertDataInTable: insertDataInTable,
@@ -160,10 +168,10 @@ module.exports = {
     sortPerDay: sortPerDay
 };
 
-// createDBStructure('test_config', function(res){
-//   getElement('str', '2003-05-03-02', '2003-05-03-10', '0', 'test_config', function(res){
 
-//     console.log(res)
-// })
+// createDBStructure('test_config', function(res){
+// getElement('str', '2003-05-03-00', '2003-05-03-23', '-3', 'test_config', function(res){
+
+//       })
 // })
 

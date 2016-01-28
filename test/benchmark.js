@@ -4,10 +4,12 @@ var lib = require('./../index.js')
 
 function runBenchmark(callback){
 	suite.add('getElement#perDay', function() {
-    	lib.getElement('delta', '2016-00-23-00', '2016-00-23-23', '0', function(res){})
+    	lib.getElement('delta', '2003-05-03-00', '2003-05-03-23', '0', 'test_config', function(res){
+    	})
 	})
 	.add('getElement#perMonth', function() {
-	  	lib.getElement('delta', '2016-00-01-00', '2016-00-31-23', '0', function(res){})
+	  	lib.getElement('delta', '2003-05-03-00', '2003-05-06-23', '0', 'test_config', function(res){
+	  	})
 	})
 	.on('cycle', function(event) {
 	  console.log(String(event.target));
