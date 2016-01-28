@@ -1,7 +1,7 @@
 
 var cassandra = require('cassandra-driver');
 
-var config = require('./config.js')
+var config = require('./test/config.js')
 var client = new cassandra.Client(config.database);
 
 function createDBStructure(nameOfTable, callback){
@@ -93,11 +93,60 @@ function getElement(id, reqDateFrom, reqDateTo, timezone, nameOfTable, callback)
 }
 
 function sumData(res){
-  var sum = 0;
-  for (var i = 0; i < res.length; i++) {
-    sum += res[i].number
-  };
-  return sum;
+    var sum = 0;
+    for (var i = 0; i < res.length; i++) {
+      sum += res[i].number
+    };
+    return sum;
+}
+
+function sortPerDay(res, callback){
+
+  var sorted = []
+
+  if (res){
+    for (var i = 0; i < res.length; i++) {
+      res[i].date = res[i].date.substring(0,res[i].date.length-3)
+    };
+
+    res = sortArray(res)
+    
+    sorted.push(res[0])
+
+    sorted = sumAndCut(sorted, res)
+
+    callback(sorted)
+  } else {
+    callback({status: 400, msg:'[sortPerDay function] res is undefined'})
+  }
+}
+
+function sortArray(res){
+    res.sort(function (a, b) {
+      if (a.date > b.date) {
+        return 1;
+      }
+      if (a.date < b.date) {
+        return -1;
+      }
+      return 0;
+    });
+
+    return res
+}
+
+function sumAndCut(sorted, res){
+    var newElPos = 0;
+
+    for (var i = 1; i < res.length; i++) {
+      if (sorted[newElPos].date != res[i].date) {
+        newElPos++;
+        sorted[newElPos] = res[i]
+      } else {
+        sorted[newElPos].number += res[i].number
+      }
+    };
+    return sorted
 }
 
 module.exports = {
@@ -107,7 +156,8 @@ module.exports = {
     createDBStructure: createDBStructure,
     insertDataInTable: insertDataInTable,
     selectFromDB: selectFromDB,
-    putFromConfigInDB: putFromConfigInDB
+    putFromConfigInDB: putFromConfigInDB,
+    sortPerDay: sortPerDay
 };
 
 // createDBStructure('test_config', function(res){

@@ -1,5 +1,5 @@
 var lib = require('./../index.js')
-var config = require('./test_config.js')
+var config = require('./config.js')
 var assert = require('assert');
 var benchmark = require('./benchmark.js')
 
@@ -120,6 +120,13 @@ describe("Finding results in cassandra", function(){
 						done();
 					})
 		    });
+
+		    it("Should sum results per day", function(done){    
+			    	lib.sortPerDay(config.array, function(res){
+						assert.deepEqual(res, config.sortPerDay)
+						done();
+					})
+		    });
 		});
 
 		describe('Error handling scenario.', function(){
@@ -157,6 +164,20 @@ describe("Finding results in cassandra", function(){
 							assert.fail("Should return error.");
 						} else {
 							assert.equal(res.msg, "[selectFromDB function] SELECT error");						
+						} 
+
+						done()
+			    	})
+			});
+
+			it("Should throw exception if req param is undefined", function(done){
+
+			    	lib.sortPerDay(null, function(res){
+
+						if (res.status != 400){
+							assert.fail("Should return error.");
+						} else {
+							assert.equal(res.msg, "[sortPerDay function] res is undefined");						
 						} 
 
 						done()
