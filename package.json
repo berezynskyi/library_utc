@@ -1,5 +1,6 @@
 {
-  "name": "Lib",
+  "name": "library-utc",
+  "author": "berezynskyi",
   "version": "1.0.0",
   "dependencies": {
     "benchmark": "^2.0.0",
